@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>求人サイト向け 無料ホームページテンプレート tp_job4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ここにサイト説明を入れます">
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div id="container">
+
+<header>
+<h1 id="logo"><a href="index.html"><img src="images/logo.png" alt="JOB INFO"></a></h1>
+<!--メインメニュー-->
+<nav id="menubar">
+	<ul>
+	<li><a href="">時間割<span>time table</span></a>
+		<ul>
+		<li><a href="list.html">一年</a></li>
+		<li><a href="list.html">二年</a></li>
+		<li><a href="list.html">三年</a></li>
+		</ul>
+	</li>
+	<li><a href="info.html">課題<span>Homework</span></a>
+		<ul>
+			<li><a href="list.html">一年</a></li>
+			<li><a href="list.html">二年</a></li>
+			<li><a href="list.html">三年</a></li>
+			</ul>
+	</li>
+	<li><a href="">行事<span>event</span></a>
+		<ul>
+		<li><a href="faq.html">体育祭</a></li>
+		<li><a href="faq.html">四葉祭</a></li>
+		<li><a href="faq.html">修学旅行</a></li>
+	
+		</ul>
+	</li>
+	<li><a href="contact.html">質問箱<span>Contact</span></a></li>
+	</ul>
+	</nav>
+</header>
+
+<main>
+
+<section>
+
+<h2>確認画面</h2>
+
+<!-- フォームの情報はここからです -->
+<form name="form1" enctype="multipart/form-data" method="post" action="<?php echo $_SERVER["REQUEST_URI"];?>">
+<input type="hidden" name="mode" value="confirm">
+<table class="ta1">
+<!--<tr><td colspan="2" class="auto"><strong>確認画面</strong></td></tr>-->
+<!-- 入力／確認 -->
+<!--<tr><th class="tamidashi" colspan="2">お問い合わせフォーム</th></tr>-->
+<tr>
+<th width="150">お名前</th>
+<td>
+<input type="hidden" name="item1" value="<?php echo $form["item1"];?>">
+<?php echo $form["item1"];?>
+</td>
+</tr>
+<tr>
+<th width="150">メールアドレス</th>
+<td>
+<input type="hidden" name="item2" value="<?php echo $form["item2"];?>">
+<?php echo $form["item2"];?>
+</td>
+</tr>
+<tr>
+<th>お問い合わせ内容</th>
+<td>
+<input type="hidden" name="item3" value="<?php echo $form["item3"]; ?>">
+<?php echo nl2br($form["item3"]);?>
+</td>
+</tr>
+</table>
+
+<p class="btn">
+<input type="submit" value="送信する">
+&nbsp;
+<input type="button" value="戻る" onClick="document.form1.mode.value='reinput';document.form1.submit()">
+</p>
+
+</form>
+<!-- フォームの情報はここまでです -->
+
+</section>
+
+</main>
+
+<div id="footermenu">
+<ul>
+<li class="title">メニュー</li>
+<li><a href="index.html">ホーム</a></li>
+<li><a href="company.html">会社概要</a></li>
+<li><a href="info.html">掲載のご案内</a></li>
+<li><a href="faq.html">よく頂く質問</a></li>
+<li><a href="contact.html">お問い合わせ</a></li>
+</ul>
+<ul>
+	<li class="title">時間割</li>
+	<li><a href="list.html">1年</a></li>
+	<li><a href="list.html">2年</a></li>
+	<li><a href="list.html">3年</a></li>
+</ul>
+<ul>
+<li class="title">メニュー見出し</li>
+<li><a href="#">サンプルメニューサンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+</ul>
+<ul>
+<li class="title">メニュー見出し</li>
+<li><a href="#">サンプルメニューサンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+</ul>
+</div>
+<!--/#footermenu-->
+
+<footer>
+<small>Copyright&copy; <a href="index.html">JOB INFO</a> All Rights Reserved.</small>
+<span class="pr"><a href="https://template-party.com/" target="_blank">《Web Design:Template-Party》</a></span>
+</footer>
+
+</div>
+<!--/#container-->
+
+<!--jQueryの読み込み-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!--job4用のスクリプト-->
+<script src="js/main.js"></script>
+
+<!--ハンバーガーボタン（開閉操作のボタン）-->
+<div id="menubar_hdr"></div>
+
+<!--ページの上部へ戻るボタン-->
+<div class="pagetop"><a href="#">↑</a></div>
+
+</body>
+</html>

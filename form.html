@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>求人サイト向け 無料ホームページテンプレート tp_job4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ここにサイト説明を入れます">
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div id="container">
+
+<header>
+<h1 id="logo"><a href="index.html"><img src="images/logo.png" alt="JOB INFO"></a></h1>
+<!--メインメニュー-->
+<nav id="menubar">
+	<ul>
+	<li><a href="">時間割<span>time table</span></a>
+		<ul>
+		<li><a href="list.html">一年</a></li>
+		<li><a href="list.html">二年</a></li>
+		<li><a href="list.html">三年</a></li>
+		</ul>
+	</li>
+	<li><a href="info.html">課題<span>Homework</span></a>
+		<ul>
+			<li><a href="list.html">一年</a></li>
+			<li><a href="list.html">二年</a></li>
+			<li><a href="list.html">三年</a></li>
+			</ul>
+	</li>
+	<li><a href="">行事<span>event</span></a>
+		<ul>
+		<li><a href="faq.html">体育祭</a></li>
+		<li><a href="faq.html">四葉祭</a></li>
+		<li><a href="faq.html">修学旅行</a></li>
+	
+		</ul>
+	</li>
+	<li><a href="contact.html">質問箱<span>Contact</span></a></li>
+	</ul>
+	</nav>
+</header>
+
+<main>
+
+<section>
+
+<h2>お問い合わせフォーム</h2>
+
+<!-- フォームの情報はここからです -->
+<form name="form1" enctype="multipart/form-data" method="post" action="<?php echo $_SERVER["REQUEST_URI"];?>">
+<input type="hidden" name="mode" value="form">
+<table class="ta1">
+<!-- 入力／確認 -->
+<!--<tr><th class="tamidashi" colspan="2">お問い合わせフォーム</th></tr>-->
+<tr>
+<th width="150">お名前<span style="color:red">※</span></th>
+<td>
+<input name="item1" value="<?php echo $form["item1"];?>" type="text" size="40" maxlength="500" class="ws">
+<?php if ($msg["item1"]) echo '<div style="color:red">' . $msg["item1"] . '</div>'; ?>
+</td>
+</tr>
+<tr>
+<th width="150">メールアドレス<span style="color:red">※</span></th>
+<td>
+<input name="item2" value="<?php echo $form["item2"];?>" type="text" size="40" maxlength="500" class="ws">
+<?php if ($msg["item2"]) echo '<div style="color:red">' . $msg["item2"] . '</div>'; ?>
+</td>
+</tr>
+<tr>
+<th>お問い合わせ内容<span style="color:red">※</span></th>
+<td>
+<textarea name="item3" cols="40" rows="10" class="wl"><?php echo $form["item3"]; ?></textarea>
+<?php if ($msg["item3"]) echo '<div style="color:red">' . $msg["item3"] . '</div>'; ?>
+</td>
+</tr>
+</table>
+
+<p class="btn">
+<input type="submit" value="内容を確認する">
+&nbsp;
+<input type="reset" value="リセット">
+</p>
+
+</form>
+<!-- フォームの情報はここまでです -->
+
+</section>
+
+</main>
+
+<div id="footermenu">
+<ul>
+<li class="title">メニュー</li>
+<li><a href="index.html">ホーム</a></li>
+<li><a href="company.html">会社概要</a></li>
+<li><a href="info.html">掲載のご案内</a></li>
+<li><a href="faq.html">よく頂く質問</a></li>
+<li><a href="contact.html">お問い合わせ</a></li>
+</ul>
+<ul>
+	<li class="title">時間割</li>
+	<li><a href="list.html">1年</a></li>
+	<li><a href="list.html">2年</a></li>
+	<li><a href="list.html">3年</a></li>
+</ul>
+<ul>
+<li class="title">メニュー見出し</li>
+<li><a href="#">サンプルメニューサンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+</ul>
+<ul>
+<li class="title">メニュー見出し</li>
+<li><a href="#">サンプルメニューサンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+<li><a href="#">サンプルメニュー</a></li>
+</ul>
+</div>
+<!--/#footermenu-->
+
+<footer>
+<small>Copyright&copy; <a href="index.html">JOB INFO</a> All Rights Reserved.</small>
+<span class="pr"><a href="https://template-party.com/" target="_blank">《Web Design:Template-Party》</a></span>
+</footer>
+
+</div>
+<!--/#container-->
+
+<!--jQueryの読み込み-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!--job4用のスクリプト-->
+<script src="js/main.js"></script>
+
+<!--ハンバーガーボタン（開閉操作のボタン）-->
+<div id="menubar_hdr"></div>
+
+<!--ページの上部へ戻るボタン-->
+<div class="pagetop"><a href="#">↑</a></div>
+
+</body>
+</html>
