@@ -12,6 +12,21 @@
 
 <body class="home">
 <!--メイン画像と２つのボタン-->
+<script>
+        var password = prompt("パスワードを入力してください:");
+        var correctPassword = "kagi";  // ここに設定したいパスワードを入力
+
+        if (password !== correctPassword) {
+            document.body.innerHTML = "パスワードが間違っています。";
+            document.body.style.textAlign = "center";
+            document.body.style.fontSize = "20px";
+            document.body.style.marginTop = "20%";
+        } else {
+            document.body.innerHTML = "<h1>ようこそ！パスワードが正しいです。</h1>";
+            document.body.innerHTML = "<a href="index+.html">サイトはこちらです</a>";
+
+        }
+    </script>
 <div id="mainimg">
 <div id="mainimg-inner">
 <div><a href="list_base.html"><span><i class="fas fa-search"></i>落し物</span></a></div>
