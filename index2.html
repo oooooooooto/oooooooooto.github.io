@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+　　<meta name="description" content="ここにサイト説明を入れます">
+　　<link rel="stylesheet" href="css/style.css">
+    <title>パスワード保護ページ</title>
+    <style>
+        #content {
+            display: none;
+        }
+    </style>
+</head>
+<body　>
+
+<h2>パスワードを入力してください</h2>
+
+<!-- パスワードフォーム -->
+<div id="password-form">
+    <label for="password">パスワード:</label>
+    <input type="password" id="password" required>
+    <button onclick="checkPassword()">送信</button>
+</div>
+
+<!-- パスワードが正しい場合に表示されるコンテンツ -->
+<div id="content">
+<header>
+<h1 id="logo"><a href="index.html"><img src="images/logo.png" alt="JOB INFO"></a></h1>
+<!--メインメニュー-->
+<nav id="menubar">
+<ul>
+<li><a href="">時間割<span>time table</span></a>
+	<ul>
+	<li><a href="1year.html">一年</a></li>
+	<li><a href="2year.html">二年</a></li>
+	<li><a href="#">三年</a></li>
+	</ul>
+</li>
+<li><a href="info.html">課題<span>Homework</span></a>
+	<ul>
+		<li><a href="1year.html">一年</a></li>
+		<li><a href="2year.html">二年</a></li>
+		<li><a href="#">三年</a></li>
+		</ul>
+</li>
+<li><a href="">行事<span>event</span></a>
+	<ul>
+	<li><a href="faq.html">体育祭</a></li>
+	<li><a href="faq.html">四葉祭</a></li>
+	<li><a href="faq.html">修学旅行</a></li>
+
+	</ul>
+</li>
+<li><a href="contact.html">質問箱<span>Contact</span></a></li>
+</ul>
+</nav>
+</header>
+
+<main>
+
+
+
+<section>
+
+<h2>お知らせ</h2>
+
+<dl id="new">
+<dt>2022/07/28<span>その他</span></dt>
+<dd>サイトをリリースしました</dd>
+</dl>
+
+
+</section>
+
+</main>
+
+<div id="footermenu">
+<ul>
+<li class="title">メニュー</li>
+<li><a href="index.html">ホーム</a></li>
+<li><a href="faq.html">学年行事</a></li>
+<li><a href="contact.html">お問い合わせ</a></li>
+</ul>
+<ul>
+<li class="title">時間割</li>
+<li><a href="1year.html">1年</a></li>
+<li><a href="2year.html">2年</a></li>
+<li><a href="#">3年</a></li>
+</ul>
+<ul>
+<li class="title">課題</li>
+<li><a href="#">1年</a></li>
+<li><a href="#">2年</a></li>
+<li><a href="#">3年</a></li>
+</ul>
+<ul>
+<li class="title">-</li>
+<li><a href="#">-</a></li>
+<li><a href="#">-</a></li>
+<li><a href="#">-</a></li>
+<li><a href="#">-</a></li>
+</ul>
+</div>
+<!--/#footermenu-->
+
+<footer>
+<small>Copyright&copy; <a href="index.html">JOB INFO</a> All Rights Reserved.</small>
+<span class="pr"><a href="https://template-party.com/" target="_blank">《Web Design:Template-Party》</a></span>
+</footer>
+
+</div>
+<!--/#container-->
+
+<!--jQueryの読み込み-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!--スライドショー（vegas）-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vegas/2.5.4/vegas.min.js"></script>
+<script src="js/vegas.js"></script>
+
+<!--job4用のスクリプト-->
+<script src="js/main.js"></script>
+
+<!--ハンバーガーボタン（開閉操作のボタン）-->
+<div id="menubar_hdr"></div>
+
+<!--ページの上部へ戻るボタン-->
+<div class="pagetop"><a href="#">↑</a></div>
+
+</div>
+
+<script>
+    function checkPassword() {
+        const password = document.getElementById('password').value;
+        const correctPassword = "1234"; // 正しいパスワードをここで設定
+
+        if (password === correctPassword) {
+            // パスワードが正しい場合、コンテンツを表示
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('password-form').style.display = 'none';
+        } else {
+            alert("パスワードが間違っています！");
+        }
+    }
+</script>
+
+</body>
+</html>
