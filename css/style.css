@@ -469,6 +469,11 @@ footer .pr {display: block;}
 	font-size: 0.7em;	/*文字サイズを70%に。*/
 }
 
+.subject-title {
+    font-size: 24px;   /* 文字を大きくする */
+    font-weight: bold; /* 太字にする */
+    margin-top: 15px;  /* 上の余白を追加 */
+}
 /*IE対策*/
 .list div {min-height: 0%;}
 
