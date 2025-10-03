@@ -1,1 +1,490 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>oooooooooto - 統合ポータル（デモ）</title>
+  <meta name="description" content="時間割・課題・行事を管理する統合ポータル（デモ）">
+  <style>
+    :root{ --accent:#2b6cb0; --muted:#6b7280; --bg:#f7fafc; --card:#ffffff }
+    *{box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;margin:0;background:var(--bg);color:#111}
+    a{color:var(--accent);text-decoration:none}
+    header{background:linear-gradient(90deg, rgba(43,108,176,.08), rgba(43,108,176,.03)); padding:16px 20px; border-bottom:1px solid rgba(0,0,0,.04)}
+    .wrap{max-width:1100px;margin:18px auto;padding:0 16px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    h1{font-size:1.125rem;margin:0}
+    p.lead{margin:6px 0 0;color:var(--muted)}
+    nav.topnav{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .btn{background:transparent;border:1px solid rgba(0,0,0,.06);padding:8px 12px;border-radius:8px;cursor:pointer}
+    .btn.primary{background:var(--accent);color:white;border-color:transparent}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left;font-size:0.95rem}
+    th{background:linear-gradient(0deg,#fff,#fff);font-weight:600}
+    .meta{color:var(--muted);font-size:0.85rem}
+    .overlay{position:fixed;inset:0;background:rgba(2,6,23,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:60}
+    .loginbox{width:100%;max-width:520px;background:white;padding:20px;border-radius:12px;box-shadow:0 12px 30px rgba(2,6,23,.35)}
+    input[type=password], input[type=text], textarea{width:100%;padding:10px;border:1px solid #e6edf3;border-radius:8px}
+    .hint{color:var(--muted);font-size:0.9rem;margin-top:8px}
+    .error{color:#b91c1c;margin-top:8px}
+    .row{display:flex;gap:8px;align-items:center}
+    .spaced{display:flex;justify-content:space-between;align-items:center}
+    .search{display:flex;gap:8px}
+    input.searchin{padding:8px;border-radius:8px;border:1px solid #e6edf3;width:100%}
+    .small{font-size:0.85rem;color:var(--muted)}
+    footer{max-width:1100px;margin:24px auto;padding:0 16px 36px;color:var(--muted);font-size:0.9rem}
+    .tablewrap{overflow:auto}
+    /* task card list */
+    .list-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .task-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 2px 6px rgba(8,20,40,.04)}
+    .task-card h4{margin:0 0 6px}
+    .task-card .line dt{font-weight:600}
+    .task-card .line dd{margin:0 0 8px}
+    .task-card .btn a{display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,.06)}
+    /* small utilities */
+    .notice{background:#fff8db;padding:8px;border-radius:8px;border:1px solid #fff0b3;color:#664d03;margin-top:12px}
+    /* responsive iframe */
+    .iframewrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
+    .iframewrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+    /* footer menu */
+    #footermenu{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px}
+    #footermenu ul{list-style:none;padding:0;margin:0}
+    #footermenu li.title{font-weight:700;margin-bottom:6px}
+    @media (max-width:600px){.iframewrap{padding-bottom:120%}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo">OT</div>
+        <div>
+          <h1>oooooooooto 統合ポータル（デモ）</h1>
+          <p class="lead">時間割・課題・行事をまとめて確認できます。管理者はログインして編集できます。</p>
+        </div>
+      </div>
+      <nav class="topnav" aria-label="主要ナビゲーション">
+        <button class="btn" data-nav="home">ホーム</button>
+        <button class="btn" data-nav="timetable">時間割</button>
+        <button class="btn" data-nav="tasks">課題</button>
+        <button class="btn" data-nav="events">行事</button>
+        <button class="btn" data-nav="about">このサイトについて</button>
+      </nav>
+    </div>
+  </header>
 
+  <main class="wrap">
+    <div id="lastUpdated" class="small meta">最終更新: --</div>
+
+    <div class="grid">
+      <section>
+        <!-- HOME -->
+        <div id="page-home" class="card page" data-page="home">
+          <div class="spaced"><h2>お知らせ</h2><small class="small">注目の更新</small></div>
+          <div id="newsList" style="margin-top:12px"></div>
+        </div>
+
+        <!-- TIMETABLE -->
+        <div id="page-timetable" class="card page" data-page="timetable" style="display:none;margin-top:18px">
+          <div class="spaced">
+            <h2>時間割（学年／組を切替）</h2>
+            <div class="small">以下に1組〜6組の時間割を掲載</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <!-- 既存サイトの時間割テーブル（1組〜6組をそのまま配置） -->
+            <h3>1組</h3>
+            <div class="tablewrap">
+              <table class="Table">
+                <thead><tr><th>月曜日</th><th>火曜日</th><th>水曜日</th><th>木曜日</th><th>金曜日</th></tr></thead>
+                <tbody>
+                  <tr><td>美術・音楽</td><td>言語文化</td><td>体育</td><td>理数数学1+A</td><td>理数化学</td></tr>
+                  <tr><td>美術・音楽</td><td>現代の国語</td><td>保健</td><td>現代の国語</td><td>理数化学</td></tr>
+                  <tr><td>理数生物</td><td>論理表現１</td><td>理数数学1+A</td><td>EC1</td><td>論理表現１</td></tr>
+                  <tr><td>理数生物</td><td>理数数学1+B</td><td>公共</td><td>EC1</td><td>歴史総合</td></tr>
+                  <tr><td>EC1</td><td>理数化学</td><td>理数数学1+B</td><td>体育</td><td>理数数学1+A</td></tr>
+                  <tr><td>公共</td><td>理数物理</td><td>情報１</td><td>言語文化</td><td>創造理数探求基礎</td></tr>
+                  <tr><td>歴史総合</td><td>理数物理</td><td>情報1</td><td>LHR</td><td>創造理数探求基礎</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>2組</h3>
+            <div class="tablewrap">
+              <table class="Table">
+                <thead><tr><th>月曜日</th><th>火曜日</th><th>水曜日</th><th>木曜日</th><th>金曜日</th></tr></thead>
+                <tbody>
+                  <tr><td>美術・音楽</td><td>論理表現１</td><td>体育</td><td>公共</td><td>現代の国語</td></tr>
+                  <tr><td>美術・音楽</td><td>数学１</td><td>生物基礎</td><td>化学基礎</td><td>数学A</td></tr>
+                  <tr><td>数学１</td><td>生物基礎</td><td>EC1</td><td>数学１</td><td>言語文化</td></tr>
+                  <tr><td>現代の国語</td><td>化学基礎</td><td>EC1</td><td>保健</td><td>工業情報数理</td></tr>
+                  <tr><td>数学A</td><td>言語文化</td><td>SS工学技術基礎</td><td>体育</td><td>EC1</td></tr>
+                  <tr><td>物理基礎</td><td>SS科学技術探究</td><td>工学技術基礎</td><td>工業情報数理</td><td>論理表現１</td></tr>
+                  <tr><td>物理基礎</td><td>SS科学技術探究</td><td>SS工学技術基礎</td><td>LHR</td><td>公共</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 3組〜6組（元データを全て載せています） -->
+            <h3>3組</h3>
+            <div class="tablewrap">
+              <table class="Table">
+                <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                <tbody>
+                  <tr><td>化学基礎</td><td>数学1</td><td>EC1</td><td>現代の国語</td><td>言語文化</td></tr>
+                  <tr><td>数学1</td><td>数学A</td><td>EC1</td><td>論理表現１</td><td>生物基礎</td></tr>
+                  <tr><td>美術・音楽</td><td>化学基礎</td><td>体育</td><td>体育</td><td>数学1</td></tr>
+                  <tr><td>美術・音楽</td><td>工業情報数理</td><td>保健</td><td>工業情報数理</td><td>公共</td></tr>
+                  <tr><td>数学A</td><td>公共</td><td>生物基礎</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                  <tr><td>論理表現１</td><td>現代の国語</td><td>科学技術探究</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                  <tr><td>EC1</td><td>言語文化</td><td>科学技術探究</td><td>LHR</td><td>工業技術基礎</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>4組</h3>
+            <div class="tablewrap">
+              <table class="Table">
+                <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                <tbody>
+                  <tr><td>公共</td><td>数学1</td><td>EC1</td><td>論理表現１</td><td>生物基礎</td></tr>
+                  <tr><td>数学1</td><td>言語文化</td><td>EC1</td><td>保健</td><td>現代の国語</td></tr>
+                  <tr><td>美術・音楽</td><td>生物基礎</td><td>体育</td><td>体育</td><td>数学1</td></tr>
+                  <tr><td>美術・音楽</td><td>工業情報数理</td><td>化学基礎</td><td>工業情報数理</td><td>論理表現１</td></tr>
+                  <tr><td>言語文化</td><td>現代の国語</td><td>数学A</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                  <tr><td>化学基礎</td><td>数学A</td><td>科学技術探究</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                  <tr><td>EC1</td><td>公共</td><td>科学技術探究</td><td>LHR</td><td>工業技術基礎</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>5組</h3>
+            <div class="tablewrap">
+              <table class="Table">
+                <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                <tbody>
+                  <tr><td>数学1</td><td>生物基礎</td><td>数学A</td><td>EC1</td><td>数学1</td></tr>
+                  <tr><td>論理表現１</td><td>論理表現１</td><td>体育</td><td>EC1</td><td>数学A</td></tr>
+                  <tr><td>化学基礎</td><td>数学1</td><td>公共</td><td>保健</td><td>生物基礎</td></tr>
+                  <tr><td>工業情報数理</td><td>現代の国語</td><td>工業情報数理</td><td>体育</td><td>言語文化</td></tr>
+                  <tr><td>美術・音楽</td><td>工業技術基礎</td><td>言語文化</td><td>科学技術探究</td><td>化学基礎</td></tr>
+                  <tr><td>美術・音楽</td><td>工業技術基礎</td><td>物理基礎</td><td>科学技術探究</td><td>EC1</td></tr>
+                  <tr><td>公共</td><td>工業技術基礎</td><td>物理基礎</td><td>LHR</td><td>現代の国語</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>6組</h3>
+            <div class="tablewrap">
+              <table class="Table">
+                <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                <tbody>
+                  <tr><td>数学1</td><td>公共</td><td>言語文化</td><td>EC1</td><td>数学1</td></tr>
+                  <tr><td>化学基礎</td><td>生物基礎</td><td>体育</td><td>EC1</td><td>生物基礎</td></tr>
+                  <tr><td>現代の国語</td><td>数学1</td><td>保健</td><td>公共</td><td>現代の国語</td></tr>
+                  <tr><td>工業情報数理</td><td>論理表現１</td><td>工業情報数理</td><td>体育</td><td>数学A</td></tr>
+                  <tr><td>美術・音楽</td><td>工業技術基礎</td><td>化学基礎</td><td>科学技術探究</td><td>言語文化</td></tr>
+                  <tr><td>美術・音楽</td><td>工業技術基礎</td><td>物理基礎</td><td>科学技術探究</td><td>EC1</td></tr>
+                  <tr><td>数学A</td><td>工業技術基礎</td><td>物理基礎</td><td>LHR</td><td>論理表現１</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TASKS -->
+        <div id="page-tasks" class="card page" data-page="tasks" style="display:none;margin-top:18px">
+          <div class="spaced">
+            <h2>課題一覧</h2>
+            <div class="row" style="flex:1">
+              <div style="flex:1" class="search">
+                <input id="taskSearch" class="searchin" placeholder="科目・キーワードで検索（iframe内は検索できません）" aria-label="課題検索">
+              </div>
+              <button class="btn primary" id="newTaskBtn">課題を追加</button>
+            </div>
+          </div>
+
+          <!-- Google スプレッドシート埋め込み（既存サイトのiframe） -->
+          <div style="margin-top:12px">
+            <div class="small meta">先生用スプレッドシート（この埋め込み内はブラウザの制約で検索対象外です）</div>
+            <div class="iframewrap" style="margin-top:8px">
+              <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRzoh-UAIM-g77R8Ss64lDUT_juqWh-TSMLecY3ic5-9ortA8vCNxQTNZm3DTBsEFlw4lZL7VLZ-1sa/pubhtml?widget=true&amp;headers=false" loading="lazy"></iframe>
+            </div>
+          </div>
+
+          <!-- 冬休みの課題（既存リストをカード化） -->
+          <div style="margin-top:18px">
+            <h3>冬休みの課題</h3>
+            <div id="winterTasks" class="list-container" style="margin-top:8px">
+              <div class="task-card" data-subject="EC" data-content="スタディサプリ 28本の動画を視聴後、確認テスト全問回答" data-due="1月8日">
+                <h4>EC</h4>
+                <dl class="line">
+                  <dt>課題</dt><dd>スタディサプリ</dd>
+                  <dt>課題内容</dt><dd>28本の動画を視聴後、確認テスト全問回答</dd>
+                  <dt>提出期限</dt><dd>1月8日</dd>
+                </dl>
+                <p class="btn"><a href="#">fight!</a></p>
+              </div>
+
+              <div class="task-card" data-subject="言語文化" data-content="古文単語 p211～230までを確認" data-due="提出なし">
+                <h4>言語文化</h4>
+                <dl class="line">
+                  <dt>課題</dt><dd>古文単語</dd>
+                  <dt>課題内容</dt><dd>p211～230までを確認</dd>
+                  <dt>提出期限</dt><dd>提出なし</dd>
+                </dl>
+                <p class="btn"><a href="#">fight!</a></p>
+              </div>
+
+              <div class="task-card" data-subject="論理表現" data-content="英単語 p10～329までを確認" data-due="提出なし">
+                <h4>論理表現</h4>
+                <dl class="line">
+                  <dt>課題</dt><dd>英単語</dd>
+                  <dt>課題内容</dt><dd>p10～329までを確認</dd>
+                  <dt>提出期限</dt><dd>提出なし</dd>
+                </dl>
+                <p class="btn"><a href="#">fight!</a></p>
+              </div>
+
+              <div class="task-card" data-subject="数学" data-content="青チャート 数1A:数Ⅱ指数関数 / 数1B:数Ⅰ三角比" data-due="数学初回授業にて提出">
+                <h4>数学</h4>
+                <dl class="line">
+                  <dt>課題</dt><dd>青チャート</dd>
+                  <dt>課題内容</dt><dd>数1Aクラス・数Ⅱ指数関数 / 数1Bクラス・数Ⅰ三角比</dd>
+                  <dt>提出期限</dt><dd>数学初回授業にて提出</dd>
+                </dl>
+                <p class="btn"><a href="#">fight!</a></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ローカルで追加・管理する課題テーブル -->
+          <div style="margin-top:18px" class="tablewrap card" aria-live="polite">
+            <div class="spaced"><h3 style="margin:0">ローカル課題（個人用メモ）</h3><small class="small">ブラウザのローカルストレージに保存されます</small></div>
+            <table id="tasksTable" style="margin-top:8px">
+              <thead><tr><th>科目</th><th>内容</th><th>提出期限</th><th>状態</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- EVENTS -->
+        <div id="page-events" class="card page" data-page="events" style="display:none;margin-top:18px">
+          <div class="spaced"><h2>行事カレンダー</h2><small class="small">主要行事を掲載</small></div>
+          <div id="eventsList" style="margin-top:12px"></div>
+        </div>
+
+        <!-- ABOUT -->
+        <div id="page-about" class="card page" data-page="about" style="display:none;margin-top:18px">
+          <h2>このサイトについて</h2>
+          <p class="meta">このページは既存サイトと改良デモを統合したサンプルです。公開運用ではサーバー側の認証・DBを使うことを推奨します。</p>
+        </div>
+      </section>
+
+      <!-- ASIDE -->
+      <aside>
+        <div class="card">
+          <h3>クイック操作</h3>
+          <div style="margin-top:8px" class="row">
+            <button class="btn" id="btnLogin">ログイン</button>
+            <button class="btn" id="btnRefresh">更新</button>
+          </div>
+          <div style="margin-top:12px" class="small">検索や追加はログイン後にできます（デモ）。</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>使い方メモ</h3>
+          <ol style="padding-left:18px">
+            <li>ログインして内容を追加・編集（デモはクライアント保存）</li>
+            <li>課題スプレッドシートは先生が管理、ローカル課題は個人用メモ</li>
+            <li>本番運用では外部DBやGoogleスプレッドシートAPI連携を検討</li>
+          </ol>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>フッターメニュー</h3>
+          <div id="footermenu">
+            <ul><li class="title">メニュー</li><li><a href="#">ホーム</a></li><li><a href="#">学年行事</a></li><li><a href="#">お問い合わせ</a></li></ul>
+            <ul><li class="title">時間割</li><li><a href="#">1年</a></li><li><a href="#">2年</a></li><li><a href="#">3年</a></li></ul>
+            <ul><li class="title">課題</li><li><a href="#">1年</a></li><li><a href="#">2年</a></li><li><a href="#">3年</a></li></ul>
+            <ul><li class="title">テスト</li><li><a href="#">1年</a></li><li><a href="#">2年</a></li><li><a href="#">3年</a></li></ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <small>Copyright &copy; JOB INFO — 統合デモ</small>
+    <div class="small meta">このデモはクライアント側で動きます。公開時は必ずサーバー側認証・暗号化を実装してください。</div>
+  </footer>
+
+  <!-- ログインオーバーレイ -->
+  <div id="overlay" class="overlay" aria-hidden="false" role="dialog" aria-label="ログインダイアログ">
+    <div class="loginbox" role="document">
+      <h2>ログイン</h2>
+      <p class="hint">管理者はログイン後にローカル課題を追加できます（デモ）。</p>
+      <div class="formrow">
+        <label for="pw">パスワード</label>
+        <input id="pw" type="password" autocomplete="current-password" placeholder="パスワードを入力" aria-label="パスワード入力">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+        <button id="ok" class="btn primary">ログイン</button>
+        <button id="browse" class="btn">内容を試しに見る</button>
+      </div>
+      <div id="err" class="error" role="status" aria-live="polite" style="display:none"></div>
+      <p class="hint">※このデモはクライアント側でパスワード照合をしています（デモ用パスワード: <strong>1234</strong>）。公開運用では安全な認証を導入してください。</p>
+    </div>
+  </div>
+
+  <script>
+    /* ========== データ（デモ用） ========== */
+    const state = {
+      password: '1234', // デモ用（本番で埋め込まないこと）
+      lastUpdated: null,
+      news:[{title:'サイトを統合しました', date:'2025-09-29', body:'既存サイトの課題・時間割を統合しました。'}],
+      tasks:[ // ローカルで管理する個人用課題（localStorageに保存）
+        {subject:'数学', content:'宿題：問題集P24〜26', due:'2025-10-10', status:'未提出'},
+        {subject:'英語', content:'英単語テスト範囲：Unit3', due:'2025-10-05', status:'未提出'}
+      ],
+      events:[{date:'2025-10-15', title:'文化祭', desc:'地域公開。集合：8:30'}]
+    };
+
+    /* ========== ユーティリティ ========== */
+    function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+    /* ========== レンダリング ========== */
+    function renderAll(){
+      document.getElementById('lastUpdated').textContent = '最終更新: ' + (state.lastUpdated || '未更新');
+      renderNews(); renderTasks(); renderEvents();
+    }
+
+    function renderNews(){
+      const el = document.getElementById('newsList'); el.innerHTML='';
+      state.news.forEach(n=>{
+        const d=document.createElement('div');
+        d.style.marginBottom='10px';
+        d.innerHTML = `<strong>${escapeHtml(n.title)}</strong> <div class="meta">${escapeHtml(n.date)}</div><div style="margin-top:6px">${escapeHtml(n.body)}</div>`;
+        el.appendChild(d);
+      });
+    }
+
+    function renderTasks(filter=''){
+      const tbody = document.querySelector('#tasksTable tbody'); tbody.innerHTML='';
+      const q = (filter||'').toLowerCase();
+      state.tasks.filter(t => (t.subject + ' ' + t.content + ' ' + t.due + ' ' + t.status).toLowerCase().includes(q))
+        .forEach(t=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${escapeHtml(t.subject)}</td><td>${escapeHtml(t.content)}</td><td>${escapeHtml(t.due)}</td><td>${escapeHtml(t.status)}</td>`;
+          tbody.appendChild(tr);
+        });
+      // 冬休みカードもフィルタする
+      filterWinterCards(q);
+    }
+
+    function renderEvents(){
+      const el = document.getElementById('eventsList'); el.innerHTML='';
+      state.events.forEach(e=>{
+        const d=document.createElement('div'); d.style.marginBottom='12px';
+        d.innerHTML = `<strong>${escapeHtml(e.date)} — ${escapeHtml(e.title)}</strong><div class="meta">${escapeHtml(e.desc)}</div>`;
+        el.appendChild(d);
+      });
+    }
+
+    /* ========== ナビゲーション ========== */
+    document.querySelectorAll('button[data-nav]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const page = b.getAttribute('data-nav');
+        document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+        const show = document.getElementById('page-'+page);
+        if(show) show.style.display='block';
+      });
+    });
+
+    /* ========== ログイン（デモ） ========== */
+    const overlay = document.getElementById('overlay');
+    const pw = document.getElementById('pw');
+    const err = document.getElementById('err');
+    document.getElementById('ok').addEventListener('click', ()=>{
+      if(pw.value === state.password){
+        overlay.style.display='none'; overlay.setAttribute('aria-hidden','true');
+        state.lastUpdated = todayISO(); saveState(); renderAll();
+      } else {
+        err.style.display='block'; err.textContent='パスワードが違います。管理者に確認してください。';
+      }
+    });
+    document.getElementById('browse').addEventListener('click', ()=>{
+      overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); renderAll();
+    });
+    document.getElementById('btnLogin').addEventListener('click', ()=>{ overlay.style.display='flex'; overlay.setAttribute('aria-hidden','false'); });
+
+    pw.addEventListener('keyup', (e)=>{ if(e.key==='Enter') document.getElementById('ok').click(); });
+
+    /* ========== タスク追加（簡易） ========== */
+    document.getElementById('newTaskBtn').addEventListener('click', ()=>{
+      // 簡易プロンプトUI（デモ）
+      const subject = prompt('科目名を入力'); if(!subject) return;
+      const content = prompt('課題内容を入力'); if(!content) return;
+      const due = prompt('提出期限を YYYY-MM-DD 形式で入力（例: 2025-10-10）', todayISO()); if(!due) return;
+      state.tasks.push({subject, content, due, status:'未提出'});
+      state.lastUpdated = todayISO();
+      saveState();
+      renderTasks(document.getElementById('taskSearch').value);
+      document.getElementById('lastUpdated').textContent = '最終更新: ' + state.lastUpdated;
+    });
+
+    /* ========== 検索（ローカル課題 + 冬休みカード） ========== */
+    const taskSearch = document.getElementById('taskSearch');
+    taskSearch.addEventListener('input', (e)=>{
+      renderTasks(e.target.value);
+    });
+
+    function filterWinterCards(q){
+      const cards = document.querySelectorAll('#winterTasks .task-card');
+      cards.forEach(card => {
+        const subj = (card.dataset.subject || '').toLowerCase();
+        const cont = (card.dataset.content || '').toLowerCase();
+        const due = (card.dataset.due || '').toLowerCase();
+        const show = (!q) || subj.includes(q) || cont.includes(q) || due.includes(q);
+        card.style.display = show ? 'block' : 'none';
+      });
+    }
+
+    /* ========== ローカル保存 ========== */
+    function saveState(){ localStorage.setItem('ot_demo_state', JSON.stringify(state)); }
+    function loadState(){
+      try{
+        const d = JSON.parse(localStorage.getItem('ot_demo_state'));
+        if(d){
+          // 限られたキーのみ反映（安全のため）
+          if(Array.isArray(d.tasks)) state.tasks = d.tasks;
+          if(Array.isArray(d.news)) state.news = d.news;
+          if(Array.isArray(d.events)) state.events = d.events;
+          if(d.lastUpdated) state.lastUpdated = d.lastUpdated;
+        }
+      }catch(e){ console.warn('load fail', e); }
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', ()=>{ loadState(); renderAll(); alert('ローカルストレージから読み込みました（デモ）。'); });
+
+    /* ========== 初期化 ========== */
+    (function init(){
+      loadState();
+      renderAll();
+      // 最初はHOME表示
+      document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+      document.getElementById('page-home').style.display='block';
+    })();
+
+    /* ========== ヘルパー（XSS防止） ========== */
+    function escapeHtml(str){
+      if(!str && str !== 0) return '';
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+  </script>
+</body>
+</html>
