@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>JOB INFO — 改良統合ポータル（デモ）</title>
+<meta name="description" content="時間割・課題・行事を管理する統合ポータル（デモ）">
+<style>
+  /* ---------- 基本（元テンプレ風） ---------- */
+  :root{
+    --primary:#2b6cb0;
+    --muted:#6b7280;
+    --bg:#f2f6fb;
+    --panel:#ffffff;
+    --accent:#0a6fb3;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;background:var(--bg);color:#111}
+  a{color:var(--accent);text-decoration:none}
+  #container{width:100%;max-width:1000px;margin:20px auto;background:var(--panel);box-shadow:0 2px 8px rgba(16,24,40,.06);border-radius:4px;overflow:hidden}
+  header{padding:14px 18px;border-bottom:1px solid #e6edf3;display:flex;align-items:center;gap:12px}
+  #logo img{height:56px;display:block}
+  header h1{font-size:1.05rem;margin:0}
+  header p.lead{margin:6px 0 0;color:var(--muted);font-size:0.92rem}
+
+  /* menu */
+  nav#menubar{background:#fff;border-top:1px solid #f0f4f8;border-bottom:1px solid #f0f4f8}
+  nav#menubar ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap}
+  nav#menubar > ul > li{padding:12px 14px;border-right:1px solid #f3f6f9;position:relative}
+  nav#menubar a{display:block;color:#222;font-weight:600}
+  nav#menubar span{display:block;font-weight:400;font-size:0.86rem;color:var(--muted)}
+  nav#menubar ul li ul{position:absolute;left:0;top:100%;background:#fff;min-width:160px;box-shadow:0 6px 18px rgba(12,20,30,.06);display:none;padding:8px 0;border-radius:4px;z-index:40}
+  nav#menubar ul li:hover > ul{display:block}
+  nav#menubar ul li ul li{padding:6px 12px}
+  nav#menubar ul li ul li a{font-weight:500;color:#333}
+  #menubar_hdr{display:none}
+
+  @media (max-width:800px){
+    nav#menubar ul{flex-direction:column}
+    nav#menubar > ul > li{border-right:0;border-bottom:1px solid #f3f6f9;padding:10px}
+    nav#menubar ul li ul{position:static;box-shadow:none;padding-left:12px;display:none}
+    nav#menubar ul li.open > ul{display:block}
+    #menubar_hdr{display:block;padding:10px;border-top:1px solid #eef4fb;cursor:pointer;text-align:right}
+  }
+
+  main{padding:18px}
+  .grid{display:grid;grid-template-columns:1fr 300px;gap:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{background:#fff;padding:12px;border-radius:6px;border:1px solid #eef4f8;box-shadow:0 1px 2px rgba(12,20,30,.02)}
+  h2{margin:0 0 8px;font-size:1.05rem}
+  .small{font-size:0.85rem;color:var(--muted)}
+  .meta{color:var(--muted);font-size:0.85rem}
+  .tablewrap{overflow:auto;border-radius:6px}
+  table{width:100%;border-collapse:collapse;font-size:0.95rem}
+  th,td{padding:10px;border-bottom:1px solid #f3f6f9;text-align:left}
+  th{background:#fafcff;font-weight:700;color:#233746}
+
+  /* tabs for timetable */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .tab{padding:6px 10px;border-radius:6px;border:1px solid #eef4f8;background:#fff;cursor:pointer}
+  .tab.active{background:var(--primary);color:#fff;border-color:transparent}
+
+  /* task cards */
+  .list-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px}
+  .task-card{background:#fff;border-radius:6px;padding:12px;border:1px solid #eef4f8}
+  .task-card h4{margin:0 0 8px}
+  .task-card dl{margin:0}
+  .task-card dt{font-weight:700}
+  .task-card dd{margin:4px 0 8px}
+  .btn{display:inline-block;padding:8px 12px;border-radius:6px;background:#f7fbff;border:1px solid #e6f0fa;color:var(--primary);cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff;border-color:transparent}
+  .inline-btn{background:transparent;border:1px solid #eef4f8;padding:6px 8px;border-radius:6px;cursor:pointer}
+  .muted{color:var(--muted);font-size:0.9rem}
+
+  /* modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.5);display:flex;align-items:center;justify-content:center;z-index:80}
+  .modal{background:#fff;padding:16px;border-radius:8px;width:100%;max-width:520px}
+  .modal h3{margin:0 0 6px}
+  .form-row{margin-top:8px}
+
+  /* export/import */
+  .file-input{display:none}
+
+  /* small helpers */
+  .flex{display:flex;gap:8px;align-items:center}
+  .spaced{display:flex;justify-content:space-between;align-items:center}
+  footer{background:#fff;padding:12px 18px;border-top:1px solid #eef4f8;font-size:0.85rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+
+</style>
+</head>
+<body>
+  <div id="container">
+    <header>
+      <div id="logo"><a href="index.html"><img src="images/logo.png" alt="JOB INFO" onerror="this.style.display='none'"></a></div>
+      <div style="flex:1">
+        <h1>科学技術高校非公</h1>
+        <p class="lead">時間割・課題・行事をまとめて確認できます。管理者はログインして編集できます。</p>
+      </div>
+    </header>
+    <div id="passwordPrompt" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#f2f6fb">
+      <h2>観覧パスワードを入力してください</h2>
+      <input id="viewPassword" type="password" placeholder="パスワード" style="padding:8px;border:1px solid #ccc;border-radius:4px;margin-top:10px">
+      <button id="submitPassword" style="padding:8px 12px;margin-top:10px;background:#2b6cb0;color:white;border:none;border-radius:4px;cursor:pointer">送信</button>
+      <div id="passwordError" style="color:red;margin-top:10px;display:none">パスワードが違います。</div>
+    </div>
+
+    <!-- menu -->
+    <nav id="menubar" role="navigation" aria-label="メインメニュー">
+      <ul>
+        <li><a href="#">時間割 <span>time table</span></a>
+          <ul>
+            <li><a href="#" data-nav="timetable">一年</a></li>
+            <li><a href="#" data-nav="timetable">二年</a></li>
+            <li><a href="#" data-nav="timetable">三年</a></li>
+          </ul>
+        </li>
+        <li><a href="#">課題 <span>Homework</span></a>
+          <ul>
+            <li><a href="#" data-nav="tasks">一年</a></li>
+            <li><a href="#" data-nav="tasks">二年</a></li>
+            <li><a href="#" data-nav="tasks">三年</a></li>
+          </ul>
+        </li>
+        <li><a href="#">行事 <span>event</span></a>
+          <ul>
+            <li><a href="#" data-nav="events">体育祭</a></li>
+            <li><a href="#" data-nav="events">四葉祭</a></li>
+            <li><a href="#" data-nav="events">修学旅行</a></li>
+          </ul>
+        </li>
+        <li><a href="#">テスト <span>tests</span></a>
+          <ul>
+            <li><a href="#" data-nav="timetable">一年</a></li>
+            <li><a href="#" data-nav="timetable">二年</a></li>
+            <li><a href="#" data-nav="timetable">三年</a></li>
+          </ul>
+        </li>
+      </ul>
+      <div id="menubar_hdr">メニュー</div>
+    </nav>
+
+    <main>
+      <div style="padding:18px">
+        <div style="margin-bottom:8px;color:var(--muted)">最終更新: <span id="lastUpdated">--</span></div>
+        <div class="grid">
+
+          <!-- 左コンテンツ -->
+          <section>
+            <!-- HOME -->
+            <div class="panel" id="page-home" data-page="home">
+              <div class="spaced"><h2>お知らせ</h2><span class="small">注目の更新</span></div>
+              <div id="newsList" style="margin-top:12px"></div>
+            </div>
+
+            <!-- TIMETABLE with tabs -->
+            <div class="panel" id="page-timetable" data-page="timetable" style="display:none;margin-top:16px">
+              <div class="spaced"><h2>時間割</h2><span class="small">組を切替できます</span></div>
+
+              <div style="margin-top:10px">
+                <div class="tabs" role="tablist" aria-label="クラス切替">
+                  <button class="tab active" data-class="1">1組</button>
+                  <button class="tab" data-class="2">2組</button>
+                  <button class="tab" data-class="3">3組</button>
+                  <button class="tab" data-class="4">4組</button>
+                  <button class="tab" data-class="5">5組</button>
+                  <button class="tab" data-class="6">6組</button>
+                </div>
+
+                <!-- 各クラスはコンパクトにして切替で表示 -->
+                <div id="timetable-wrap" style="margin-top:10px">
+                  <!-- 1組 -->
+                  <div class="timetable-table" data-class="1">
+                    <div class="tablewrap">
+                      <table>
+                        <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                        <tbody>
+                          <tr><td>美術・音楽</td><td>言語文化</td><td>体育</td><td>理数数学1+A</td><td>理数化学</td></tr>
+                          <tr><td>美術・音楽</td><td>現代の国語</td><td>保健</td><td>現代の国語</td><td>理数化学</td></tr>
+                          <tr><td>理数生物</td><td>論理表現１</td><td>理数数学1+A</td><td>EC1</td><td>論理表現１</td></tr>
+                          <tr><td>理数生物</td><td>理数数学1+B</td><td>公共</td><td>EC1</td><td>歴史総合</td></tr>
+                          <tr><td>EC1</td><td>理数化学</td><td>理数数学1+B</td><td>体育</td><td>理数数学1+A</td></tr>
+                          <tr><td>公共</td><td>理数物理</td><td>情報１</td><td>言語文化</td><td>創造理数探求基礎</td></tr>
+                          <tr><td>歴史総合</td><td>理数物理</td><td>情報1</td><td>LHR</td><td>創造理数探求基礎</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- 2組 -->
+                  <div class="timetable-table" data-class="2" style="display:none">
+                    <div class="tablewrap">
+                      <table>
+                        <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                        <tbody>
+                          <tr><td>美術・音楽</td><td>論理表現１</td><td>体育</td><td>公共</td><td>現代の国語</td></tr>
+                          <tr><td>美術・音楽</td><td>数学１</td><td>生物基礎</td><td>化学基礎</td><td>数学A</td></tr>
+                          <tr><td>数学１</td><td>生物基礎</td><td>EC1</td><td>数学１</td><td>言語文化</td></tr>
+                          <tr><td>現代の国語</td><td>化学基礎</td><td>EC1</td><td>保健</td><td>工業情報数理</td></tr>
+                          <tr><td>数学A</td><td>言語文化</td><td>SS工学技術基礎</td><td>体育</td><td>EC1</td></tr>
+                          <tr><td>物理基礎</td><td>SS科学技術探究</td><td>工学技術基礎</td><td>工業情報数理</td><td>論理表現１</td></tr>
+                          <tr><td>物理基礎</td><td>SS科学技術探究</td><td>SS工学技術基礎</td><td>LHR</td><td>公共</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- 3〜6組も同様（省略なしで入っています） -->
+                  <div class="timetable-table" data-class="3" style="display:none">
+                    <div class="tablewrap">
+                      <table>
+                        <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                        <tbody>
+                          <tr><td>化学基礎</td><td>数学1</td><td>EC1</td><td>現代の国語</td><td>言語文化</td></tr>
+                          <tr><td>数学1</td><td>数学A</td><td>EC1</td><td>論理表現１</td><td>生物基礎</td></tr>
+                          <tr><td>美術・音楽</td><td>化学基礎</td><td>体育</td><td>体育</td><td>数学1</td></tr>
+                          <tr><td>美術・音楽</td><td>工業情報数理</td><td>保健</td><td>工業情報数理</td><td>公共</td></tr>
+                          <tr><td>数学A</td><td>公共</td><td>生物基礎</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                          <tr><td>論理表現１</td><td>現代の国語</td><td>科学技術探究</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                          <tr><td>EC1</td><td>言語文化</td><td>科学技術探究</td><td>LHR</td><td>工業技術基礎</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="timetable-table" data-class="4" style="display:none">
+                    <div class="tablewrap">
+                      <table>
+                        <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                        <tbody>
+                          <tr><td>公共</td><td>数学1</td><td>EC1</td><td>論理表現１</td><td>生物基礎</td></tr>
+                          <tr><td>数学1</td><td>言語文化</td><td>EC1</td><td>保健</td><td>現代の国語</td></tr>
+                          <tr><td>美術・音楽</td><td>生物基礎</td><td>体育</td><td>体育</td><td>数学1</td></tr>
+                          <tr><td>美術・音楽</td><td>工業情報数理</td><td>化学基礎</td><td>工業情報数理</td><td>論理表現１</td></tr>
+                          <tr><td>言語文化</td><td>現代の国語</td><td>数学A</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                          <tr><td>化学基礎</td><td>数学A</td><td>科学技術探究</td><td>物理基礎</td><td>工業技術基礎</td></tr>
+                          <tr><td>EC1</td><td>公共</td><td>科学技術探究</td><td>LHR</td><td>工業技術探求基礎</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="timetable-table" data-class="5" style="display:none">
+                    <div class="tablewrap">
+                      <table>
+                        <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                        <tbody>
+                          <tr><td>数学1</td><td>生物基礎</td><td>数学A</td><td>EC1</td><td>数学1</td></tr>
+                          <tr><td>論理表現１</td><td>論理表現１</td><td>体育</td><td>EC1</td><td>数学A</td></tr>
+                          <tr><td>化学基礎</td><td>数学1</td><td>公共</td><td>保健</td><td>生物基礎</td></tr>
+                          <tr><td>工業情報数理</td><td>現代の国語</td><td>工業情報数理</td><td>体育</td><td>言語文化</td></tr>
+                          <tr><td>美術・音楽</td><td>工業技術基礎</td><td>言語文化</td><td>科学技術探究</td><td>化学基礎</td></tr>
+                          <tr><td>美術・音楽</td><td>工業技術基礎</td><td>物理基礎</td><td>科学技術探究</td><td>EC1</td></tr>
+                          <tr><td>公共</td><td>工業技術基礎</td><td>物理基礎</td><td>LHR</td><td>現代の国語</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="timetable-table" data-class="6" style="display:none">
+                    <div class="tablewrap">
+                      <table>
+                        <thead><tr><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th></tr></thead>
+                        <tbody>
+                          <tr><td>数学1</td><td>公共</td><td>言語文化</td><td>EC1</td><td>数学1</td></tr>
+                          <tr><td>化学基礎</td><td>生物基礎</td><td>体育</td><td>EC1</td><td>生物基礎</td></tr>
+                          <tr><td>現代の国語</td><td>数学1</td><td>保健</td><td>公共</td><td>現代の国語</td></tr>
+                          <tr><td>工業情報数理</td><td>論理表現１</td><td>工業情報数理</td><td>体育</td><td>数学A</td></tr>
+                          <tr><td>美術・音楽</td><td>工業技術基礎</td><td>化学基礎</td><td>科学技術探究</td><td>言語文化</td></tr>
+                          <tr><td>美術・音楽</td><td>工業技術基礎</td><td>物理基礎</td><td>科学技術探究</td><td>EC1</td></tr>
+                          <tr><td>数学A</td><td>工業技術基礎</td><td>物理基礎</td><td>LHR</td><td>論理表現１</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- TASKS -->
+            <div class="panel" id="page-tasks" data-page="tasks" style="display:none;margin-top:16px">
+              <div class="spaced"><h2>課題一覧</h2><span class="small">先生のシート＋冬休み課題＋個人メモ</span></div>
+
+              <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+                <input id="taskSearch" class="searchin" placeholder="検索（ローカル課題・冬休みカード）">
+                <button id="newTaskBtn" class="btn primary">課題を追加</button>
+              </div>
+
+              <div style="margin-top:12px">
+                <div class="small meta">先生用スプレッドシート（埋め込み内は検索不可）</div>
+                <div style="margin-top:8px" class="panel">
+                  <div class="iframewrap" style="padding-bottom:56.25%">
+                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRzoh-UAIM-g77R8Ss64lDUT_juqWh-TSMLecY3ic5-9ortA8vCNxQTNZm3DTBsEFlw4lZL7VLZ-1sa/pubhtml?widget=true&amp;headers=false" loading="lazy"></iframe>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:14px">
+                <h3>冬休みの課題</h3>
+                <div id="winterTasks" class="list-container" aria-live="polite">
+                  <div class="task-card" data-subject="EC" data-content="スタディサプリ 28本の動画を視聴後、確認テスト全問回答" data-due="1月8日">
+                    <h4>EC</h4>
+                    <dl>
+                      <dt>課題</dt><dd>スタディサプリ</dd>
+                      <dt>内容</dt><dd>28本の動画 + 確認テスト</dd>
+                      <dt>期限</dt><dd>1月8日</dd>
+                    </dl>
+                    <p style="margin-top:8px"><button class="btn">詳細</button></p>
+                  </div>
+
+                  <div class="task-card" data-subject="言語文化" data-content="古文単語 p211～230までを確認" data-due="提出なし">
+                    <h4>言語文化</h4>
+                    <dl><dt>課題</dt><dd>古文単語</dd><dt>内容</dt><dd>p211～230</dd><dt>期限</dt><dd>提出なし</dd></dl>
+                    <p style="margin-top:8px"><button class="btn">詳細</button></p>
+                  </div>
+
+                  <div class="task-card" data-subject="論理表現" data-content="英単語 p10～329までを確認" data-due="提出なし">
+                    <h4>論理表現</h4>
+                    <dl><dt>課題</dt><dd>英単語</dd><dt>内容</dt><dd>p10～329</dd><dt>期限</dt><dd>提出なし</dd></dl>
+                    <p style="margin-top:8px"><button class="btn">詳細</button></p>
+                  </div>
+
+                  <div class="task-card" data-subject="数学" data-content="青チャート 数1A:数Ⅱ指数関数 / 数1B:数Ⅰ三角比" data-due="数学初回授業にて提出">
+                    <h4>数学</h4>
+                    <dl><dt>課題</dt><dd>青チャート</dd><dt>内容</dt><dd>数1A:数Ⅱ指数関数 / 数1B:数Ⅰ三角比</dd><dt>期限</dt><dd>数学初回授業</dd></dl>
+                    <p style="margin-top:8px"><button class="btn">詳細</button></p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:14px" class="panel">
+                <div class="spaced"><strong>ローカル課題（個人メモ）</strong>
+                  <div class="flex">
+                    <button id="exportBtn" class="inline-btn" title="ローカル課題をJSONでダウンロード">エクスポート</button>
+                    <label class="inline-btn" for="importFile" style="cursor:pointer">インポート</label>
+                    <input id="importFile" class="file-input" type="file" accept=".json">
+                  </div>
+                </div>
+
+                <div class="tablewrap" style="margin-top:8px">
+                  <table id="tasksTable" aria-live="polite">
+                    <thead><tr><th>科目</th><th>内容</th><th>期限</th><th>状態</th><th>操作</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- EVENTS -->
+            <div class="panel" id="page-events" data-page="events" style="display:none;margin-top:16px">
+              <div class="spaced"><h2>行事</h2><span class="small">主要行事を掲載</span></div>
+              <div id="eventsList" style="margin-top:8px"></div>
+            </div>
+
+            <!-- ABOUT -->
+            <div class="panel" id="page-about" data-page="about" style="display:none;margin-top:16px">
+              <h2>このサイトについて</h2>
+              <p class="small">既存のTemplate-Party風デザインに合わせ、機能を拡張したデモ版です。公開運用ではサーバー側認証・DB利用を必ず導入してください。</p>
+            </div>
+          </section>
+
+          <!-- aside -->
+          <aside>
+            <div class="panel">
+              <h3>クイック操作</h3>
+              <div style="margin-top:10px;display:flex;gap:8px">
+                <button class="btn" id="btnLogin">ログイン</button>
+                <button class="btn" id="btnRefresh">更新</button>
+              </div>
+              <p class="small" style="margin-top:10px">検索や追加はログイン後にできます（デモ）。</p>
+            </div>
+
+            <div class="panel" style="margin-top:12px">
+              <h3>使い方メモ</h3>
+              <ol class="small" style="padding-left:18px;margin:8px 0 0">
+                <li>ログインで追加可能（デモ用パスワード: <strong>1234</strong>）。</li>
+                <li>フル運用なら Google Sheets API / Firebase などでサーバー連携を推奨。</li>
+                <li>エクスポートでJSON保存、インポートで復元できます。</li>
+              </ol>
+            </div>
+
+            <div class="panel" style="margin-top:12px">
+              <h3>フッターメニュー（簡易）</h3>
+              <div class="small" style="margin-top:8px">リンクは必要に応じて編集してください。</div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <small>Copyright &copy; JOB INFO — デモ</small>
+      <div class="small">Template: Template-Party 風（デモ）</div>
+    </footer>
+
+  </div>
+
+  <!-- モーダル（課題追加 / 編集） -->
+  <div id="modalBackdrop" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3 id="modalTitle">課題を追加</h3>
+      <div class="form-row"><label>科目 <input id="fSubject" type="text" /></label></div>
+      <div class="form-row"><label>内容 <textarea id="fContent" rows="3"></textarea></label></div>
+      <div class="form-row"><label>提出期限 <input id="fDue" type="date" /></label></div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="modalCancel" class="btn">キャンセル</button>
+        <button id="modalSave" class="btn primary">保存</button>
+      </div>
+      <div id="modalErr" style="color:#b91c1c;margin-top:8px;display:none"></div>
+    </div>
+  </div>
+
+<script>
+/* ========== データ（デモ） ========== */
+const state = {
+  password:'1234',
+  lastUpdated:null,
+  news:[{title:'サイトを統合しました', date:'2025-09-29', body:'既存サイトの課題・時間割を統合しました。'}],
+  tasks:[
+    {subject:'数学', content:'宿題：問題集P24〜26', due:'2025-10-10', status:'未提出'},
+    {subject:'英語', content:'英単語テスト範囲：Unit3', due:'2025-10-05', status:'未提出'}
+  ],
+  events:[{date:'2025-10-15', title:'文化祭', desc:'地域公開。集合：8:30'}]
+};
+
+/* ========== ユーティリティ ========== */
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function escapeHtml(s){ if(!s && s !== 0) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ========== ローカル保存 ========== */
+function saveState(){ localStorage.setItem('jobinfo_state', JSON.stringify(state)); }
+function loadState(){
+  try{
+    const d = JSON.parse(localStorage.getItem('jobinfo_state'));
+    if(d){
+      if(Array.isArray(d.tasks)) state.tasks = d.tasks;
+      if(Array.isArray(d.news)) state.news = d.news;
+      if(Array.isArray(d.events)) state.events = d.events;
+      if(d.lastUpdated) state.lastUpdated = d.lastUpdated;
+    }
+  }catch(e){ console.warn('load fail', e); }
+}
+
+/* ========== レンダリング ========== */
+function renderAll(){
+  document.getElementById('lastUpdated').textContent = state.lastUpdated || '未更新';
+  renderNews(); renderTasks(); renderEvents();
+}
+function renderNews(){
+  const el = document.getElementById('newsList'); el.innerHTML='';
+  state.news.forEach(n=>{
+    const d=document.createElement('div'); d.style.marginBottom='10px';
+    d.innerHTML = `<strong>${escapeHtml(n.title)}</strong> <div class="meta">${escapeHtml(n.date)}</div><div style="margin-top:6px">${escapeHtml(n.body)}</div>`;
+    el.appendChild(d);
+  });
+}
+function renderEvents(){
+  const el=document.getElementById('eventsList'); el.innerHTML='';
+  state.events.forEach(e=>{
+    const d=document.createElement('div'); d.style.marginBottom='10px';
+    d.innerHTML = `<strong>${escapeHtml(e.date)} — ${escapeHtml(e.title)}</strong><div class="meta">${escapeHtml(e.desc)}</div>`;
+    el.appendChild(d);
+  });
+}
+
+/* タスク表示（ソート＆フィルタ） */
+let taskSortAsc = true;
+function parseDateISO(d){
+  if(!d) return null;
+  // Accept YYYY-MM-DD or localized like 2025-10-10
+  const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return new Date(m[1],m[2]-1,m[3]);
+  return null;
+}
+function renderTasks(filter=''){
+  const tbody = document.querySelector('#tasksTable tbody'); tbody.innerHTML='';
+  const q = (filter||'').toLowerCase();
+  // clone and sort
+  const arr = state.tasks.map((t,i)=>({...t, _i:i}));
+  arr.sort((a,b)=>{
+    const da = parseDateISO(a.due), db = parseDateISO(b.due);
+    if(da && db) return taskSortAsc ? da - db : db - da;
+    if(da) return -1;
+    if(db) return 1;
+    return 0;
+  });
+  arr.filter(t => (t.subject + ' ' + t.content + ' ' + t.due + ' ' + t.status).toLowerCase().includes(q))
+    .forEach(t=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(t.subject)}</td>
+                      <td>${escapeHtml(t.content)}</td>
+                      <td>${escapeHtml(t.due || '')}</td>
+                      <td>${escapeHtml(t.status)}</td>
+                      <td>
+                        <button class="inline-btn" data-action="toggle" data-i="${t._i}" title="完了/未完了切替">✓</button>
+                        <button class="inline-btn" data-action="edit" data-i="${t._i}" title="編集">編集</button>
+                        <button class="inline-btn" data-action="delete" data-i="${t._i}" title="削除">削除</button>
+                      </td>`;
+      tbody.appendChild(tr);
+    });
+  filterWinterCards(q);
+}
+
+/* 冬休みカードのフィルタ */
+function filterWinterCards(q){
+  const cards = document.querySelectorAll('#winterTasks .task-card');
+  cards.forEach(card=>{
+    const subj = (card.dataset.subject || '').toLowerCase();
+    const cont = (card.dataset.content || '').toLowerCase();
+    const due = (card.dataset.due || '').toLowerCase();
+    const show = (!q) || subj.includes(q) || cont.includes(q) || due.includes(q);
+    card.style.display = show ? 'block' : 'none';
+  });
+}
+
+/* ========== ナビ & メニュー操作 ========== */
+document.querySelectorAll('[data-nav]').forEach(a=>{
+  a.addEventListener('click', ev=>{
+    ev.preventDefault();
+    const page = a.getAttribute('data-nav');
+    document.querySelectorAll('[data-page]').forEach(p=>p.style.display='none');
+    const show = document.getElementById('page-'+page);
+    if(show) show.style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+document.getElementById('menubar_hdr').addEventListener('click', ()=> {
+  document.querySelectorAll('#menubar > ul > li').forEach(li => li.classList.toggle('open'));
+});
+
+/* タブ（時間割） */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const cls = btn.dataset.class;
+    document.querySelectorAll('.timetable-table').forEach(t=> t.style.display = t.dataset.class === cls ? 'block' : 'none');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ========== ログイン（デモ） ========== */
+const overlay = document.getElementById('overlay') || {style:{display:'none'}};
+const loginBtn = document.getElementById('btnLogin');
+const loginModal = document.getElementById('overlay'); // overlay not used in this version; small login modal at page-top used
+const loginInput = document.getElementById('pw');
+const errElem = document.getElementById('err');
+document.getElementById('btnLogin').addEventListener('click', ()=> {
+  // use simple prompt-style inline modal (we used overlay earlier; here show builtin prompt for compactness)
+  document.getElementById('modalBackdrop').style.display='flex'; document.getElementById('modalBackdrop').setAttribute('aria-hidden','false');
+  // set modal for adding new as well? We'll treat login via same UI for simplicity: user must press cancel then login via prompt
+  // For this demo, use a small prompt:
+  const p = prompt('管理者パスワードを入力（デモ）');
+  if(p === state.password){
+    alert('ログイン成功（デモ）。課題の追加・編集が可能です。');
+  } else if(p === null){
+    // cancel
+  } else {
+    alert('パスワードが違います。');
+  }
+});
+
+/* ========== モーダル（課題追加 / 編集） ========== */
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalTitle = document.getElementById('modalTitle');
+const fSubject = document.getElementById('fSubject');
+const fContent = document.getElementById('fContent');
+const fDue = document.getElementById('fDue');
+const modalSave = document.getElementById('modalSave');
+const modalCancel = document.getElementById('modalCancel');
+const modalErr = document.getElementById('modalErr');
+
+let editingIndex = null;
+
+document.getElementById('newTaskBtn').addEventListener('click', ()=> {
+  openTaskModal();
+});
+
+function openTaskModal(editIndex=null){
+  editingIndex = editIndex;
+  modalErr.style.display='none';
+  if(editIndex === null){
+    modalTitle.textContent = '課題を追加';
+    fSubject.value = ''; fContent.value=''; fDue.value='';
+  } else {
+    modalTitle.textContent = '課題を編集';
+    const t = state.tasks[editIndex];
+    fSubject.value = t.subject || ''; fContent.value = t.content || ''; fDue.value = t.due || '';
+  }
+  modalBackdrop.style.display = 'flex'; modalBackdrop.setAttribute('aria-hidden','false');
+  fSubject.focus();
+}
+modalCancel.addEventListener('click', ()=> { closeTaskModal(); });
+modalBackdrop.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape') closeTaskModal();
+});
+
+modalSave.addEventListener('click', ()=> {
+  const subj = fSubject.value.trim(); const cont = fContent.value.trim(); const due = fDue.value;
+  if(!subj) { modalErr.style.display='block'; modalErr.textContent='科目を入力してください。'; return; }
+  if(!cont) { modalErr.style.display='block'; modalErr.textContent='課題内容を入力してください。'; return; }
+  if(editingIndex === null){
+    state.tasks.push({subject:subj, content:cont, due: due || '', status:'未提出'});
+  } else {
+    state.tasks[editingIndex].subject = subj;
+    state.tasks[editingIndex].content = cont;
+    state.tasks[editingIndex].due = due || '';
+  }
+  state.lastUpdated = todayISO(); saveState(); renderTasks(document.getElementById('taskSearch').value); closeTaskModal();
+});
+function closeTaskModal(){ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); editingIndex=null; }
+
+/* ========== タスク 行操作（編集・削除・完了） ========== */
+document.querySelector('#tasksTable tbody').addEventListener('click', (ev)=> {
+  const btn = ev.target.closest('button');
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const index = parseInt(btn.dataset.i,10);
+  if(action === 'delete'){ if(confirm('この課題を削除しますか？')) { state.tasks.splice(index,1); saveState(); renderTasks(document.getElementById('taskSearch').value); } }
+  if(action === 'edit'){ openTaskModal(index); }
+  if(action === 'toggle'){ const t = state.tasks[index]; t.status = (t.status === '未提出') ? '提出済' : '未提出'; saveState(); renderTasks(document.getElementById('taskSearch').value); }
+});
+
+/* ========== 検索（Debounce） ========== */
+let searchTimer = null;
+document.getElementById('taskSearch').addEventListener('input', (e)=>{
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=> {
+    renderTasks(e.target.value);
+  }, 220);
+});
+
+/* ========== エクスポート / インポート ========== */
+document.getElementById('exportBtn').addEventListener('click', ()=> {
+  const blob = new Blob([JSON.stringify({tasks: state.tasks, news:state.news, events:state.events, lastUpdated:state.lastUpdated}, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'jobinfo_backup_' + (new Date().toISOString().slice(0,10)) + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    try{
+      const data = JSON.parse(reader.result);
+      if(Array.isArray(data.tasks)) state.tasks = data.tasks;
+      if(Array.isArray(data.news)) state.news = data.news;
+      if(Array.isArray(data.events)) state.events = data.events;
+      if(data.lastUpdated) state.lastUpdated = data.lastUpdated;
+      saveState(); renderAll(); alert('インポートしました。');
+    }catch(err){ alert('ファイルの読み込みに失敗しました'); }
+  };
+  reader.readAsText(f);
+});
+
+/* ========== 更新ボタン（ローカルロード） ========== */
+document.getElementById('btnRefresh').addEventListener('click', ()=>{ loadState(); renderAll(); alert('ローカルストレージから読み込みました。'); });
+
+/* ========== 初期化 ========== */
+(function init(){
+  loadState();
+  renderAll();
+  // 初回はHOME表示
+  document.querySelectorAll('[data-page]').forEach(p=>p.style.display='none');
+  document.getElementById('page-home').style.display='block';
+  // render tasks initially
+  renderTasks('');
+  // close modal on backdrop click outside (semantic)
+  modalBackdrop.addEventListener('click', (e)=> { if(e.target === modalBackdrop) closeTaskModal(); });
+})();
+</script>
+<script>
+  const viewPassword = "demo1234"; // 観覧用パスワードをここで設定
+
+  document.getElementById('submitPassword').addEventListener('click', () => {
+    const inputPassword = document.getElementById('viewPassword').value;
+    if (inputPassword === viewPassword) {
+      document.getElementById('passwordPrompt').style.display = 'none';
+      document.getElementById('container').style.display = 'block';
+    } else {
+      document.getElementById('passwordError').style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
